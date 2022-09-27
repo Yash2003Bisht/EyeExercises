@@ -27,7 +27,7 @@ from mutagen.mp3 import MP3
 ANSI_COLORS = [
     '\033[0;31m', # red
     '\033[0;32m', # green
-    '\033[0;30m', # black
+    '\033[1;37m', # white
 ]
 
 
@@ -225,8 +225,7 @@ def main():
             
             for i in [math.ceil(break_time/3)]*3:
                 counter += i
-                print(counter)
-                time.sleep(1)
+                time.sleep(i)
                 text_to_speech(f'{counter} seconds passed', text_to_speech_enabled)
             
             text_to_speech('Session completed, resuming the session.', text_to_speech_enabled)
