@@ -2,6 +2,8 @@
     "exercise_reminder_sound_path": "default",
     "exercise_beep_sound_path": "default",
     "exercise_tic_sound_path": "default",
+    "exercise_text_file_path": "text_files/exercise.txt",
+    "tips_text_file_path": "text_files/tips.txt",
     "exercise_time": 60,
     "exercise_interval_time": 600,
     "break_time": 900,
