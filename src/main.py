@@ -43,7 +43,7 @@ def read_file(file_path: str, priority: int):
     """
     # check configuration file exists or not
     if not os.path.exists(file_path):
-        message = f'{ANSI_COLORS[0]} file not found'
+        message = f'{ANSI_COLORS[0]} {file_path} not found'
         if priority == 1:
             message += f' can\'t run the program {ANSI_COLORS[2]}'
             quit()
@@ -150,35 +150,37 @@ def main():
         print(f'{ANSI_COLORS[0]} Key error for {key} {ANSI_COLORS[1]}')
         quit()
     
-    print(f'{ANSI_COLORS[1]} Configration loaded successfully... {ANSI_COLORS[2]}\n')
+    print(f'{ANSI_COLORS[1]} Configration loaded successfully... {ANSI_COLORS[2]}')
 
     current_section = 1
     exercise_list = read_file('text_files/exercise.txt', 0)
 
-    text_to_speech(f"Eye Exercise Start at {datetime.datetime.now().strftime('%I:%M %p')}\n", text_to_speech_enabled)
+    if exercise_reminder_sound_path == 'default':
+            exercise_reminder_sound_path = '../music/reminder.mp3'
+
+    if exercise_beep_sound_path == 'default':
+        exercise_beep_sound_path = '../music/beep.wav'
+    
+    if exercise_tic_sound_path == 'default':
+        exercise_tic_sound_path = '../music/tic.mp3'
+    
+    if tips_enabled:
+        tips = read_file('text_files/tips.txt', 0)
+
+    text_to_speech(f"\nEye Exercise Start at {datetime.datetime.now().strftime('%I:%M %p')}\n", text_to_speech_enabled)
 
     while True:
         time.sleep(exercise_interval_time)
+        exercise_start = True
 
         if exercise_interval_time == 0:
             exercise_interval_time = config_data['exercise_interval_time']
 
-        random_exercise = random.choice(exercise_list)
-        exercise_start = True
-
         text_to_speech(f"Exercise {current_section} started", text_to_speech_enabled)
         
         if len(exercise_list) > 0:
+            random_exercise = random.choice(exercise_list)
             text_to_speech(f"You can do: {random_exercise}", text_to_speech_enabled)
-
-        if exercise_reminder_sound_path == 'default':
-            exercise_reminder_sound_path = '../music/reminder.mp3'
-
-        if exercise_beep_sound_path == 'default':
-            exercise_beep_sound_path = '../music/beep.wav'
-        
-        if exercise_tic_sound_path == 'default':
-            exercise_tic_sound_path = '../music/tic.mp3'
         
         play_sound(exercise_reminder_sound_path)
 
@@ -202,12 +204,11 @@ def main():
 
                 # health tip
                 start = time.time()
-                if tips_enabled:
-                    # mixer.music.set_volume(0.7) # decrease the current tic sound
-                    tips = read_file('text_files/tips.txt', 0)
-                    if len(tips) > 0:
-                        random_tip = random.choice(tips)
-                        text_to_speech(random_tip, text_to_speech_enabled)
+                
+                # mixer.music.set_volume(0.7) # decrease the current tic sound
+                if len(tips) > 0:
+                    random_tip = random.choice(tips)
+                    text_to_speech(random_tip, text_to_speech_enabled)
 
                 end = exercise_time - (time.time() - start)
                 sleep_time = end if end > 0 else 0
