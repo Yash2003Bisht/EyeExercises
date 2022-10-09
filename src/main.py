@@ -108,7 +108,7 @@ def play_beep_sound(reminder_sound_path: str, beep_sound_path: str):
         duration = librosa.get_duration(filename=reminder_sound_path)
     else:
         print(f'{ANSI_COLORS[0]} File format is not supported. Only .mp3 and .wav are supported \
-                to calculate the total duration of reminder sound to play beep sound.{ANSI_COLORS[2]}')
+                to calculate the total duration of reminder sound.{ANSI_COLORS[2]}')
         return None
     
     # don't play the beep sound while the exercise reminder sound is playing
@@ -241,4 +241,8 @@ def main():
                     
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('Exiting')
+        quit()
