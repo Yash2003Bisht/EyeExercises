@@ -1,7 +1,7 @@
 """
 @author: Yash Bisht
-@date: TODO
-@description: TODO
+@date: 02/10/2022
+@description: Eye Exercise Reminder
 """
 
 # --------- built-in ---------
@@ -115,10 +115,13 @@ def play_beep_sound(reminder_sound_path: str, beep_sound_path: str):
     # sleep the program for those seconds
     time.sleep(duration) 
 
-    while exercise_start:
+    while True:
         # play beep sound after every 60 seconds
         time.sleep(60)
-        play_sound(beep_sound_path)
+        if exercise_start:
+            play_sound(beep_sound_path)
+            continue
+        break
 
 
 def main():
