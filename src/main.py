@@ -138,6 +138,8 @@ def main():
         exercise_reminder_sound_path = config_data['exercise_reminder_sound_path']
         exercise_beep_sound_path = config_data['exercise_beep_sound_path']
         exercise_tic_sound_path = config_data['exercise_tic_sound_path']
+        exercise_text_file_path = config_data['exercise_text_file_path']
+        tips_text_file_path = config_data['tips_text_file_path']
         exercise_time = math.ceil(config_data['exercise_time']/2)
         exercise_interval_time = config_data['exercise_interval_time']
         break_time = config_data['break_time']
@@ -153,7 +155,7 @@ def main():
     print(f'{ANSI_COLORS[1]} Configration loaded successfully... {ANSI_COLORS[2]}')
 
     current_section = 1
-    exercise_list = read_file('text_files/exercise.txt', 0)
+    exercise_list = read_file(exercise_text_file_path, 0)
 
     if exercise_reminder_sound_path == 'default':
             exercise_reminder_sound_path = '../music/reminder.mp3'
@@ -165,7 +167,7 @@ def main():
         exercise_tic_sound_path = '../music/tic.mp3'
     
     if tips_enabled:
-        tips = read_file('text_files/tips.txt', 0)
+        tips = read_file(tips_text_file_path, 0)
 
     text_to_speech(f"\nEye Exercise Start at {datetime.datetime.now().strftime('%I:%M %p')}\n", text_to_speech_enabled)
 
