@@ -206,13 +206,14 @@ def main():
 
                 time.sleep(exercise_time)
 
-                # health tip
+                # speak health tip if enabled
                 start = time.time()
                 
-                # mixer.music.set_volume(0.7) # decrease the current tic sound
                 if len(tips) > 0:
                     random_tip = random.choice(tips)
                     text_to_speech(random_tip, text_to_speech_enabled)
+                else:
+                    text_to_speech(f'{exercise_time} seconds passed', text_to_speech_enabled)
 
                 end = exercise_time - (time.time() - start)
                 sleep_time = end if end > 0 else 0
