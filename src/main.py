@@ -168,6 +168,8 @@ def main():
     
     if tips_enabled:
         tips = read_file(tips_text_file_path, 0)
+    else:
+    	tips = []
 
     text_to_speech(f"\nEye Exercise Start at {datetime.datetime.now().strftime('%I:%M %p')}\n", text_to_speech_enabled)
 
