@@ -5,7 +5,6 @@
 """
 
 # --------- built-in ---------
-import pyttsx3
 import os
 import json
 import random
@@ -17,11 +16,12 @@ from threading import Thread
 # hide the pygame message
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
-from pygame import mixer
-
 # --------- external ---------
+import pyttsx3
 import librosa
 from mutagen.mp3 import MP3
+from pygame import mixer
+
 
 ANSI_COLORS = [
     '\033[0;31m',  # red
@@ -105,8 +105,8 @@ def play_beep_sound(reminder_sound_path: str, beep_sound_path: str):
     elif file_extension == '.wav':
         duration = librosa.get_duration(filename=reminder_sound_path)
     else:
-        print(f'{ANSI_COLORS[0]} File format is not supported. Only .mp3 and .wav are supported \
-                to calculate the total duration of reminder sound.{ANSI_COLORS[2]}')
+        print(f'{ANSI_COLORS[0]} Can\'t play beep sound because file format is not supported.'
+              f' Only .mp3 and .wav are supported to calculate the total duration of reminder sound. {ANSI_COLORS[2]}')
         return None
 
     # don't play the beep sound while the exercise reminder sound is playing
@@ -246,8 +246,5 @@ def main():
 
 
 if __name__ == '__main__':
-    try:
-        main()
-    except KeyboardInterrupt:
-        print('Exiting')
-        quit()
+    main()
+    
