@@ -40,7 +40,7 @@ def read_file(file_path: str, priority: int):
     Returns:
         Any: can return a dictionary or list
     """
-    # check configuration file exists or not
+    # check the file exists or not
     if not os.path.exists(file_path):
         message = f'{ANSI_COLORS[0]} {file_path} not found'
         if priority == 1:
