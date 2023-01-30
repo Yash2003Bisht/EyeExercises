@@ -3,6 +3,7 @@ src/__pycache__
 src/text_files
 src/analyse_config.py
 src/test.py
+config.json
 .idea
 .vscode
 TODO
