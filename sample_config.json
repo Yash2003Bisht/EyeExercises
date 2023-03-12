@@ -10,5 +10,6 @@
     "sections": 5,
     "text_to_speech_enabled": true,
     "tips_enabled": true,
-    "tic_sound": true
+    "tic_sound": true,
+    "exercise_reminder_volume": 0.3
 }

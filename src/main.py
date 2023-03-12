@@ -73,21 +73,22 @@ def text_to_speech(text: str, enabled: bool):
     print(text)
     if enabled:
         engine = pyttsx3.init()
-        engine.getProperty('voices')
-        engine.setProperty('voice', "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_EN-US_ZIRA_11.0")
         engine.say(text)
         engine.runAndWait()
 
 
-def play_sound(file: str):
+def play_sound(file: str, volume: float = 1.0):
     """ Play sounds
 
     Args:
         file (str): path of file to play music
+        volume (float): volume
     """
     mixer.init()
-    mixer.music.load(file)
-    mixer.music.play()
+    mixer_obj = mixer.music
+    mixer_obj.set_volume(volume)
+    mixer_obj.load(file)
+    mixer_obj.play()
 
 
 def play_beep_sound(reminder_sound_path: str, beep_sound_path: str):
@@ -134,6 +135,7 @@ def main():
 
     try:
         exercise_reminder_sound_path = config_data['exercise_reminder_sound_path']
+        exercise_reminder_volume = config_data['exercise_reminder_volume']
         exercise_beep_sound_path = config_data['exercise_beep_sound_path']
         exercise_tic_sound_path = config_data['exercise_tic_sound_path']
         exercise_text_file_path = config_data['exercise_text_file_path']
@@ -184,7 +186,7 @@ def main():
             random_exercise = random.choice(exercise_list)
             text_to_speech(f"You can do: {random_exercise}", text_to_speech_enabled)
 
-        play_sound(exercise_reminder_sound_path)
+        play_sound(exercise_reminder_sound_path, exercise_reminder_volume)
 
         # start a separate thread to play beep sound
         beep_sound_thread = Thread(target=play_beep_sound,
