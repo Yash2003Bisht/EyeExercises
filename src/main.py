@@ -228,8 +228,7 @@ def main():
                 break
 
         if current_section == sections:
-            text_to_speech(f'Now take a rest for {int(break_time / 60)} minutes or you can do a physical activity',
-                           text_to_speech_enabled)
+            text_to_speech(f'{int(break_time / 60)} minute break time', text_to_speech_enabled)
 
             counter = 0
 
@@ -238,8 +237,7 @@ def main():
                 time.sleep(i)
                 text_to_speech(f'{counter} seconds passed', text_to_speech_enabled)
 
-            text_to_speech('Session completed, resuming the session.', text_to_speech_enabled)
-            text_to_speech('Session resumed\n', text_to_speech_enabled)
+            text_to_speech('Break time over\n', text_to_speech_enabled)
 
             current_section = 0
             exercise_interval_time = 0
