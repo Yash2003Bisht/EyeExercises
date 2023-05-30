@@ -150,7 +150,7 @@ def main():
     # ----------- load configurations -----------
     config_data = read_file('../config.json', 1)
 
-    # ----------- default values -----------
+    # ----------- configure values -----------
     exercise_reminder_sound_path: str = catch_key_error("default", config_data, "exercise_reminder_sound_path")
     exercise_beep_sound_path: str = catch_key_error("default", config_data, "exercise_beep_sound_path")
     exercise_tic_sound_path: str = catch_key_error("default", config_data, "exercise_tic_sound_path")
