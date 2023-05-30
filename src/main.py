@@ -137,8 +137,7 @@ def catch_key_error(default_value: Any, data: Dict, *keys: Any):
         for key in keys:
             value = data[key]
         return value
-    except KeyError as key:
-        print(f"{ANSI_COLORS[0]} key {key} not found")
+    except KeyError:
         return default_value
 
 
@@ -148,7 +147,7 @@ def main():
     global exercise_start
 
     # ----------- load configurations -----------
-    config_data = read_file('../config.json', 1)
+    config_data = read_file('../config.json', 0)
 
     # ----------- configure values -----------
     exercise_reminder_sound_path: str = catch_key_error("default", config_data, "exercise_reminder_sound_path")
@@ -165,7 +164,7 @@ def main():
     exercise_reminder_volume: float = catch_key_error(0.3, config_data, "exercise_reminder_volume")
     sections: int = catch_key_error(5, config_data, "sections")
 
-    print(f'{ANSI_COLORS[1]} Configuration loaded successfully... {ANSI_COLORS[2]}')
+    print(f'{ANSI_COLORS[1]} Configuration loaded... {ANSI_COLORS[2]}')
 
     current_section: int = 1
     exercise_list: List = read_file(exercise_text_file_path, 0)
