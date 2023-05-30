@@ -12,6 +12,7 @@ import time
 import datetime
 import math
 from threading import Thread
+from typing import Any, Dict, List
 
 # hide the pygame message
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
@@ -22,12 +23,12 @@ import librosa
 from mutagen.mp3 import MP3
 from pygame import mixer
 
-
 ANSI_COLORS = [
     '\033[0;31m',  # red
     '\033[0;32m',  # green
     '\033[1;37m',  # white
 ]
+exercise_start: bool = False
 
 
 def read_file(file_path: str, priority: int):
@@ -42,7 +43,7 @@ def read_file(file_path: str, priority: int):
     """
     # check the file exists or not
     if not os.path.exists(file_path):
-        message = f'{ANSI_COLORS[0]} {file_path} not found'
+        message: str = f'{ANSI_COLORS[0]} {file_path} not found'
         if priority == 1:
             message += f' can\'t run the program {ANSI_COLORS[2]}'
             quit()
@@ -56,9 +57,9 @@ def read_file(file_path: str, priority: int):
 
     with open(file_path) as file:
         if file_extension == '.json':
-            data = json.load(file)
+            data: Any = json.load(file)
         else:
-            data = list(filter(lambda x: len(x) > 0, file.read().split('\n')))
+            data: Any = list(filter(lambda x: len(x) > 0, file.read().split('\n')))
 
     return data
 
@@ -72,7 +73,7 @@ def text_to_speech(text: str, enabled: bool):
     """
     print(text)
     if enabled:
-        engine = pyttsx3.init()
+        engine: pyttsx3.engine.Engine = pyttsx3.init()
         engine.say(text)
         engine.runAndWait()
 
@@ -123,39 +124,52 @@ def play_beep_sound(reminder_sound_path: str, beep_sound_path: str):
         break
 
 
+def catch_key_error(default_value: Any, data: Dict, *keys: Any):
+    """ Searches for a value in a dictionary. If any key is not found returns the default_value.
+
+        Args:
+            default_value (Any): default value to be returned if any of the keys are not found in the dictionary.
+            data (Dict): Dictionary to search for a value.
+            *keys (Any): keys to search for a value. Multiple keys can be provided as separate arguments.
+        """
+    try:
+        value: Any = None
+        for key in keys:
+            value = data[key]
+        return value
+    except KeyError as key:
+        print(f"{ANSI_COLORS[0]} key {key} not found")
+        return default_value
+
+
 def main():
     """ Main function of this project, responsible for playing sounds, reading configration file
-        exercise reminders etc.
-
-    """
+        exercise reminders etc."""
     global exercise_start
 
-    # ----------- load configrations -----------
+    # ----------- load configurations -----------
     config_data = read_file('../config.json', 1)
 
-    try:
-        exercise_reminder_sound_path = config_data['exercise_reminder_sound_path']
-        exercise_reminder_volume = config_data['exercise_reminder_volume']
-        exercise_beep_sound_path = config_data['exercise_beep_sound_path']
-        exercise_tic_sound_path = config_data['exercise_tic_sound_path']
-        exercise_text_file_path = config_data['exercise_text_file_path']
-        tips_text_file_path = config_data['tips_text_file_path']
-        exercise_time = math.ceil(config_data['exercise_time'] / 2)
-        exercise_interval_time = config_data['exercise_interval_time']
-        break_time = config_data['break_time']
-        text_to_speech_enabled = config_data['text_to_speech_enabled']
-        tips_enabled = config_data['tips_enabled']
-        tic_sound = config_data['tic_sound']
-        sections = config_data['sections']
-
-    except KeyError as key:
-        print(f'{ANSI_COLORS[0]} Key error for {key} {ANSI_COLORS[1]}')
-        quit()
+    # ----------- default values -----------
+    exercise_reminder_sound_path: str = catch_key_error("default", config_data, "exercise_reminder_sound_path")
+    exercise_beep_sound_path: str = catch_key_error("default", config_data, "exercise_beep_sound_path")
+    exercise_tic_sound_path: str = catch_key_error("default", config_data, "exercise_tic_sound_path")
+    exercise_text_file_path: str = catch_key_error("text_files/exercise.txt", config_data, "exercise_text_file_path")
+    tips_text_file_path: str = catch_key_error("text_files/tips.txt", config_data, "tips_text_file_path")
+    exercise_time: int = catch_key_error(60, config_data, "exercise_time")
+    exercise_interval_time: int = catch_key_error(600, config_data, "exercise_interval_time") // 2
+    break_time: int = catch_key_error(900, config_data, "break_time")
+    text_to_speech_enabled: bool = catch_key_error(True, config_data, "text_to_speech_enabled")
+    tips_enabled: bool = catch_key_error(True, config_data, "tips_enabled")
+    tic_sound: bool = catch_key_error(True, config_data, "tic_sound")
+    exercise_reminder_volume: float = catch_key_error(0.3, config_data, "exercise_reminder_volume")
+    sections: int = catch_key_error(5, config_data, "sections")
 
     print(f'{ANSI_COLORS[1]} Configuration loaded successfully... {ANSI_COLORS[2]}')
 
-    current_section = 1
-    exercise_list = read_file(exercise_text_file_path, 0)
+    current_section: int = 1
+    exercise_list: List = read_file(exercise_text_file_path, 0)
+    tips: List = []
 
     if exercise_reminder_sound_path == 'default':
         exercise_reminder_sound_path = '../music/reminder.mp3'
@@ -168,8 +182,6 @@ def main():
 
     if tips_enabled:
         tips = read_file(tips_text_file_path, 0)
-    else:
-        tips = []
 
     text_to_speech(f"\nEye Exercise Start at {datetime.datetime.now().strftime('%I:%M %p')}\n", text_to_speech_enabled)
 
@@ -210,7 +222,7 @@ def main():
                 # speak health tip if enabled
                 start = time.time()
 
-                if len(tips) > 0:
+                if tips_enabled:
                     random_tip = random.choice(tips)
                     text_to_speech(random_tip, text_to_speech_enabled)
                 else:
@@ -247,4 +259,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
