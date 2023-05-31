@@ -155,8 +155,8 @@ def main():
     exercise_tic_sound_path: str = catch_key_error("default", config_data, "exercise_tic_sound_path")
     exercise_text_file_path: str = catch_key_error("text_files/exercise.txt", config_data, "exercise_text_file_path")
     tips_text_file_path: str = catch_key_error("text_files/tips.txt", config_data, "tips_text_file_path")
-    exercise_time: int = catch_key_error(60, config_data, "exercise_time")
-    exercise_interval_time: int = catch_key_error(600, config_data, "exercise_interval_time") // 2
+    exercise_time: int = catch_key_error(60, config_data, "exercise_time") // 2
+    exercise_interval_time: int = catch_key_error(600, config_data, "exercise_interval_time")
     break_time: int = catch_key_error(900, config_data, "break_time")
     text_to_speech_enabled: bool = catch_key_error(True, config_data, "text_to_speech_enabled")
     tips_enabled: bool = catch_key_error(True, config_data, "tips_enabled")
