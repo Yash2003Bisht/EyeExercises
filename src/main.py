@@ -20,6 +20,7 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 # --------- external ---------
 import pyttsx3
 import librosa
+import requests
 from mutagen.mp3 import MP3
 from pygame import mixer
 
@@ -127,11 +128,11 @@ def play_beep_sound(reminder_sound_path: str, beep_sound_path: str):
 def catch_key_error(default_value: Any, data: Dict, *keys: Any):
     """ Searches for a value in a dictionary. If any key is not found returns the default_value.
 
-        Args:
-            default_value (Any): default value to be returned if any of the keys are not found in the dictionary.
-            data (Dict): Dictionary to search for a value.
-            *keys (Any): keys to search for a value. Multiple keys can be provided as separate arguments.
-        """
+    Args:
+        default_value (Any): default value to be returned if any of the keys are not found in the dictionary.
+        data (Dict): Dictionary to search for a value.
+        *keys (Any): keys to search for a value. Multiple keys can be provided as separate arguments.
+    """
     try:
         value: Any = None
         for key in keys:
@@ -139,6 +140,22 @@ def catch_key_error(default_value: Any, data: Dict, *keys: Any):
         return value
     except KeyError:
         return default_value
+
+
+def get_headline(ip_address: str, category: str):
+    """ Makes a get request to news scraper headline endpoint. """
+    try:
+        url = "http://" + os.path.join(ip_address, "headline")
+        res = requests.get(url, data=json.dumps({"category": category}), timeout=10)
+
+        if res.ok:
+            response_data = res.json()
+            return response_data["data"]
+
+    except (requests.exceptions.Timeout, json.JSONDecodeError):
+        pass
+
+    return None
 
 
 def main():
@@ -159,6 +176,9 @@ def main():
     exercise_interval_time: int = catch_key_error(600, config_data, "exercise_interval_time")
     break_time: int = catch_key_error(900, config_data, "break_time")
     text_to_speech_enabled: bool = catch_key_error(True, config_data, "text_to_speech_enabled")
+    news_scraper_enabled: bool = catch_key_error(True, config_data, "news_scraper_enabled")
+    news_scraper_ip: str = catch_key_error(None, config_data, "news_scraper_ip")
+    news_category: str = catch_key_error("news", config_data, "news_category")
     tips_enabled: bool = catch_key_error(True, config_data, "tips_enabled")
     tic_sound: bool = catch_key_error(True, config_data, "tic_sound")
     exercise_reminder_volume: float = catch_key_error(0.3, config_data, "exercise_reminder_volume")
@@ -218,12 +238,20 @@ def main():
 
                 time.sleep(exercise_time)
 
-                # speak health tip if enabled
+                # speak health tip or read news if enabled, higher priority is given to news
                 start = time.time()
 
-                if tips_enabled:
+                if news_scraper_enabled and news_scraper_ip and news_category:
+                    data = get_headline(news_scraper_ip, news_category)
+                    if data:
+                        text_to_speech(data["title"], text_to_speech_enabled)
+                        text_to_speech(data["description"], text_to_speech_enabled)
+                        print(data["url"])
+
+                elif tips_enabled:
                     random_tip = random.choice(tips)
                     text_to_speech(random_tip, text_to_speech_enabled)
+
                 else:
                     text_to_speech(f'{exercise_time} seconds passed', text_to_speech_enabled)
 
