@@ -11,17 +11,22 @@ import random
 import time
 import datetime
 import math
+import tempfile
 from threading import Thread
-from typing import Any, Dict, List
-
-# hide the pygame message
-os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
+from typing import Any, Dict, List, Union
 
 # --------- external ---------
 import pyttsx3
 import librosa
 import requests
 from mutagen.mp3 import MP3
+from gtts import gTTS
+from pydub import AudioSegment
+
+# hide pygame prompt
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
+
+import pygame
 from pygame import mixer
 
 ANSI_COLORS = [
@@ -77,6 +82,34 @@ def text_to_speech(text: str, enabled: bool):
         engine: pyttsx3.engine.Engine = pyttsx3.init()
         engine.say(text)
         engine.runAndWait()
+
+
+def google_text_to_speech(text: str, enabled: bool, lang: str = "hi"):
+    """ Google text to speech
+
+    Args:
+        text (str): text that function speak
+        enabled (bool): feature enabled or not by the user
+        lang (str): language
+    """
+    if enabled:
+        tts = gTTS(text=text, lang=lang)
+        temp_file = tempfile.NamedTemporaryFile(suffix=".mp3")
+        tts.save(temp_file.name)
+        print(text)
+
+        # increased the volume of the generated speech
+        audio = AudioSegment.from_file(temp_file.name, format="mp3")
+        audio += 4  # increase the volume by 4 dB
+        audio.export(temp_file.name, format="mp3")
+
+        # create a separate channel to play news audio file
+        mixer.Channel(1).play(pygame.mixer.Sound(temp_file.name))
+        while mixer.Channel(1).get_busy():
+            pygame.time.Clock().tick(10)
+
+    else:
+        print(text)
 
 
 def play_sound(file: str, volume: float = 1.0):
@@ -142,8 +175,16 @@ def catch_key_error(default_value: Any, data: Dict, *keys: Any):
         return default_value
 
 
-def get_headline(ip_address: str, category: str):
-    """ Makes a get request to news scraper headline endpoint. """
+def get_headline(ip_address: str, category: str) -> Union[Dict, None]:
+    """Makes a get request to news scraper headline endpoint.
+
+    Args:
+        ip_address (str): IP address of server
+        category (str): category you like ex. news, tech, stock-market etc.
+
+    Returns:
+        Union[Dict, None]: return Dict if the request was made successfully otherwise None
+    """
     try:
         url = "http://" + os.path.join(ip_address, "headline")
         res = requests.get(url, data=json.dumps({"category": category}), timeout=10)
@@ -244,8 +285,7 @@ def main():
                 if news_scraper_enabled and news_scraper_ip and news_category:
                     data = get_headline(news_scraper_ip, news_category)
                     if data:
-                        text_to_speech(data["title"], text_to_speech_enabled)
-                        text_to_speech(data["description"], text_to_speech_enabled)
+                        google_text_to_speech(f"{data['title']}\n{data['description']}", text_to_speech_enabled)
                         print(data["url"])
 
                 elif tips_enabled:
