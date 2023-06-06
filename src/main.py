@@ -84,12 +84,13 @@ def text_to_speech(text: str, enabled: bool):
         engine.runAndWait()
 
 
-def google_text_to_speech(text: str, enabled: bool, lang: str = "hi"):
+def google_text_to_speech(text: str, enabled: bool, volume: int, lang: str = "hi"):
     """ Google text to speech
 
     Args:
         text (str): text that function speak
         enabled (bool): feature enabled or not by the user
+        volume (int): volume of gtts
         lang (str): language
     """
     if enabled:
@@ -100,10 +101,10 @@ def google_text_to_speech(text: str, enabled: bool, lang: str = "hi"):
 
         # increased the volume of the generated speech
         audio = AudioSegment.from_file(temp_file.name, format="mp3")
-        audio += 4  # increase the volume by 4 dB
+        audio += volume  # ex. increase the volume by 6 dB
         audio.export(temp_file.name, format="mp3")
 
-        # create a separate channel to play news audio file
+        # use a separate channel to play news audio file
         mixer.Channel(1).play(pygame.mixer.Sound(temp_file.name))
         while mixer.Channel(1).get_busy():
             pygame.time.Clock().tick(10)
@@ -223,6 +224,7 @@ def main():
     tips_enabled: bool = catch_key_error(True, config_data, "tips_enabled")
     tic_sound: bool = catch_key_error(True, config_data, "tic_sound")
     exercise_reminder_volume: float = catch_key_error(0.3, config_data, "exercise_reminder_volume")
+    gtts_volume: int = catch_key_error(0, config_data, "gtts_volume")
     sections: int = catch_key_error(5, config_data, "sections")
 
     print(f'{ANSI_COLORS[1]} Configuration loaded... {ANSI_COLORS[2]}')
@@ -280,13 +282,15 @@ def main():
                 time.sleep(exercise_time)
 
                 # speak health tip or read news if enabled, higher priority is given to news
-                start = time.time()
+                start = time.perf_counter()
 
                 if news_scraper_enabled and news_scraper_ip and news_category:
                     data = get_headline(news_scraper_ip, news_category)
                     if data:
-                        google_text_to_speech(f"{data['title']}\n{data['description']}", text_to_speech_enabled)
+                        google_text_to_speech(f"{data['title']}\n{data['description']}", gtts_volume, text_to_speech_enabled)
                         print(data["url"])
+                    else:
+                        text_to_speech(f'{exercise_time} seconds passed', text_to_speech_enabled)
 
                 elif tips_enabled:
                     random_tip = random.choice(tips)
@@ -295,8 +299,8 @@ def main():
                 else:
                     text_to_speech(f'{exercise_time} seconds passed', text_to_speech_enabled)
 
-                end = exercise_time - (time.time() - start)
-                sleep_time = end if end > 0 else 0
+                end = exercise_time - (time.perf_counter() - start)
+                sleep_time = max(0, end)
 
                 time.sleep(sleep_time)
                 mixer.music.stop()  # stop the tic music
