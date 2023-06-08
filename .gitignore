@@ -1,8 +1,8 @@
 venv
-src/__pycache__
+__pycache__
 src/text_files
-src/analyse_config.py
 src/test.py
+src/eye_exercise/analyse_config.py
 config.json
 .idea
 .vscode
