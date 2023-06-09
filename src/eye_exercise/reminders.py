@@ -1,7 +1,9 @@
+# --------- built-in ---------
 import datetime
-from typing import  List
+from typing import List
 
-from helper import read_file, make, convert_to_datetime
+# --------- internal ---------
+from helper import read_file, convert_to_datetime
 
 
 def check_reminders(reminder_file_path: str) -> None:

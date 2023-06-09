@@ -6,13 +6,10 @@
 
 # --------- built-in ---------
 import random
-import time
-import datetime
 import math
 from threading import Thread
-from typing import List
 
-# --------- external ---------
+# --------- internal ---------
 from eye_exercise.helper import *
 from eye_exercise.tasks import *
 

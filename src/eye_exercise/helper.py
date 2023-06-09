@@ -1,9 +1,11 @@
+# --------- built-in ---------
 import os
 import time
 import json
 import datetime
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, List
 
+# --------- external ---------
 import requests
 import pyttsx3
 import librosa
@@ -59,7 +61,6 @@ def play_beep_sound(reminder_sound_path: str, beep_sound_path: str):
     Args:
         reminder_sound_path (str): path of file to play music
         beep_sound_path (str): path of file to play beep
-        exercise_start (bool): exercise started or not
     """
     _, file_extension = os.path.splitext(reminder_sound_path)
 
@@ -86,16 +87,19 @@ def play_beep_sound(reminder_sound_path: str, beep_sound_path: str):
         break
 
 
-def make_get_request(url: str, data: Dict = {}) -> Union[Dict, None]:
+def make_get_request(url: str, data=None) -> Union[Dict, None]:
     """ Makes a get request to the URL
 
     Args:
         url (str): URL to make a get reqeust
-        data (Dict): category you like ex. news, tech, stock-market etc. Default is empty dict
+        data (Dict): category you like ex. news, tech, stock-market etc. Default is None
 
     Returns:
         Union[Dict, None]: return Dict if the request was made successfully otherwise None
     """
+    if data is None:
+        data = {}
+
     try:
         res = requests.get(url, data=json.dumps(data), timeout=10)
         if res.ok:
@@ -122,6 +126,7 @@ def read_file(file_path: str, priority: int):
         message: str = f'{ANSI_COLORS[0]} {file_path} not found'
         if priority == 1:
             message += f' can\'t run the program {ANSI_COLORS[2]}'
+            print(message)
             quit()
         else:
             message += ANSI_COLORS[2]
@@ -133,9 +138,9 @@ def read_file(file_path: str, priority: int):
 
     with open(file_path) as file:
         if file_extension == '.json':
-            data: Any = json.load(file)
+            data: Dict = json.load(file)
         else:
-            data: Any = list(filter(lambda x: len(x) > 0, file.read().split('\n')))
+            data: List = list(filter(lambda x: len(x) > 0, file.read().split('\n')))
 
     return data
 
@@ -153,7 +158,7 @@ def catch_key_error(default_value: Any, data: Dict, *keys: Any):
         for key in keys:
             value = data[key]
         return value
-    except KeyError:
+    except (KeyError, TypeError):
         return default_value
 
 

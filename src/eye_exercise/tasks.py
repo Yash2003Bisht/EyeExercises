@@ -1,13 +1,15 @@
+# --------- built-in ---------
 import os
 import tempfile
-from typing import  Union, Dict
+from typing import Union, Dict
 
+# --------- external ---------
 import pygame
 from gtts import gTTS
 from pydub import AudioSegment
 from pygame import mixer
 
-
+# --------- internal ---------
 from eye_exercise.helper import make_get_request
 
 
