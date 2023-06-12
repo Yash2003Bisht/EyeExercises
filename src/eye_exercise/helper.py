@@ -4,6 +4,7 @@ import time
 import json
 import datetime
 from typing import Any, Dict, Union, List
+from json import JSONDecodeError
 
 # --------- external ---------
 import requests
@@ -11,6 +12,10 @@ import pyttsx3
 import librosa
 from mutagen.mp3 import MP3
 from pygame import mixer
+from requests.exceptions import ConnectionError, Timeout
+
+# --------- internal ---------
+# from reminders import *
 
 ANSI_COLORS = [
     '\033[0;31m',  # red
@@ -101,11 +106,11 @@ def make_get_request(url: str, data=None) -> Union[Dict, None]:
         data = {}
 
     try:
-        res = requests.get(url, data=json.dumps(data), timeout=10)
+        res = requests.get(url, data=json.dumps(data), timeout=30)
         if res.ok:
             response_data = res.json()
             return response_data["data"]
-    except (requests.exceptions.Timeout, json.JSONDecodeError):
+    except (Timeout, ConnectionError, JSONDecodeError):
         pass
 
     return None
@@ -162,29 +167,29 @@ def catch_key_error(default_value: Any, data: Dict, *keys: Any):
         return default_value
 
 
-def convert_to_datetime(date_string: str) -> Union[datetime.datetime, None]:
+def convert_to_datetime(date_string: str, specifier: str) -> Union[datetime.datetime, None]:
     """ Convert a given string representation of a date and time into a datetime object.
 
     Args:
         date_string (str): A string representing a date and time
+        specifier (str): specifier to specify the datetime format
 
     Returns:
         Union[datetime.datetime, None]: A datetime object representing the converted date and time if the input
         string matches any of the supported formats, or None if no match is found.
     """
-    formats = [
-        "%I:%M",  # ex. run it every 2 hours 15 minutes
-        "%I:%M %p",  # ex. run it daily at 3:15 PM
-        "%d/%m/%Y",  # ex run it on 07/07/2023
-        "%d/%m/%Y %I:%M %p"  # ex run it on 30/08/2021 at 3:15 AM
-    ]
+    formats = {
+        "every": "%I:%M",              # ex. run it every 2 hours 15 minutes
+        "daily": "%I:%M %p",           # ex. run it daily at 3:15 PM
+        "on": "%d/%m/%Y",              # ex run it on 07/07/2023
+        "on_at": "%d/%m/%Y %I:%M %p"   # ex run it on 30/08/2021 at 3:15 AM
+    }
 
-    for fmt in formats:
-        try:
-            datetime_obj = datetime.datetime.strptime(date_string, fmt)
-            return datetime_obj
-        except ValueError:
-            pass
+    try:
+        datetime_obj = datetime.datetime.strptime(date_string, formats.get(specifier))
+        return datetime_obj
+    except (TypeError, ValueError):
+        pass
 
-    # return None if the string doesn't match any of the formats
+    # return None if the string doesn't match any of the formats or specifier is not supported
     return None

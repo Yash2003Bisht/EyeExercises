@@ -3,7 +3,6 @@
 @date: 02/10/2022
 @description: Eye Exercise Reminder
 """
-
 # --------- built-in ---------
 import random
 import math
@@ -12,6 +11,7 @@ from threading import Thread
 # --------- internal ---------
 from eye_exercise.helper import *
 from eye_exercise.tasks import *
+from eye_exercise.reminders import *
 
 
 def start_eye_exercise():
@@ -97,7 +97,10 @@ def start_eye_exercise():
                 # speak health tip or read news if enabled, higher priority is given to news
                 start = time.perf_counter()
 
-                if news_scraper_enabled and news_scraper_ip and news_category:
+                if check_reminders(os.path.join(os.getcwd(), "text_files/reminders.txt"), exercise_interval_time):
+                    pass
+
+                elif news_scraper_enabled and news_scraper_ip and news_category:
                     data = get_headline(news_scraper_ip, news_category)
                     if data:
                         google_text_to_speech(f"{data['title']}\n{data['description']}",

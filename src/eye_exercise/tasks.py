@@ -42,21 +42,6 @@ def google_text_to_speech(text: str, enabled: bool, volume: int, lang: str = "hi
         print(text)
 
 
-def get_market_stats(ip_address: str, exchange: str) -> Union[None, Dict]:
-    """ Returns the stock market stats
-
-    Args:
-        ip_address (str): IP address of the server
-        exchange (str): exchange NSE or BSE
-
-    Returns:
-        Union[None, Dict]: Returns a dict if the request was made successfully otherwise None
-    """
-    url = "http://" + os.path.join(ip_address, "market-stats")
-    data = {"exchange": exchange}
-    return make_get_request(url, data)
-
-
 def get_headline(ip_address: str, category: str) -> Union[Dict, None]:
     """ Makes a get request to news scraper headline endpoint.
 
