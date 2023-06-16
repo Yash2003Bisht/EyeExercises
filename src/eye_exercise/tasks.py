@@ -10,7 +10,7 @@ from pydub import AudioSegment
 from pygame import mixer
 
 # --------- internal ---------
-from eye_exercise.helper import make_get_request
+from src.eye_exercise.helper import make_get_request
 
 
 def google_text_to_speech(text: str, enabled: bool, volume: int, lang: str = "hi"):

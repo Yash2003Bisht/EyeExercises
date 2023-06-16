@@ -7,7 +7,7 @@ from typing import Union, Dict, List
 from tabulate import tabulate
 
 # --------- internal ---------
-from eye_exercise.helper import *
+from src.eye_exercise.helper import *
 
 
 def get_market_stats(ip_address: str, exchange: str) -> Union[None, Dict]:
