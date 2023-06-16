@@ -9,7 +9,6 @@ import math
 from threading import Thread
 
 # --------- internal ---------
-from eye_exercise.helper import *
 from eye_exercise.tasks import *
 from eye_exercise.reminders import *
 
