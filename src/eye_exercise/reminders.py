@@ -7,7 +7,7 @@ from typing import Union, Dict, List
 from tabulate import tabulate
 
 # --------- internal ---------
-from src.eye_exercise.helper import *
+from eye_exercise.helper import *
 
 
 def get_market_stats(ip_address: str, exchange: str) -> Union[None, Dict]:
@@ -41,6 +41,8 @@ def check_reminders(reminder_file_path: str, exercise_interval_time: int):
         exercise_interval_time (int): exercise interval time
     """
     reminders: List[str] = read_file(reminder_file_path, 0)
+    flag = False
+
     for remind in reminders:
         specifier, reminder_datetime, func_to_exec, args = map(lambda text: text.lower(), remind.split(" - "))
         reminder_datetime, current_datetime = convert_to_datetime(reminder_datetime, specifier), \
@@ -55,9 +57,9 @@ def check_reminders(reminder_file_path: str, exercise_interval_time: int):
         diff: float = (reminder_datetime - current_datetime).total_seconds()
         if 0 < diff < exercise_interval_time / 1.5 or exercise_interval_time * 0.5 - abs(diff) > 0:
             globals()[func_to_exec](*args.split(" "))
-            return True
+            flag = True
 
-        return False
+    return flag
 
 
 if __name__ == "__main__":

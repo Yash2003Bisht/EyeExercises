@@ -1,6 +1,6 @@
 from typing import Dict
 
-from src.eye_exercise.helper import read_file
+from eye_exercise.helper import read_file
 
 
 def load_config(config_path: str):
