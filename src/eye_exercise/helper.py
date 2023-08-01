@@ -116,7 +116,7 @@ def make_get_request(url: str, data=None) -> Union[Dict, None]:
     return None
 
 
-def read_file(file_path: str, priority: int):
+def read_file(file_path: str, priority: int) -> Union[Dict, List]:
     """ Read config file data
 
     Args:
@@ -124,7 +124,7 @@ def read_file(file_path: str, priority: int):
         priority (int): priority of the file
 
     Returns:
-        Any: can return a dictionary or list
+        Union[Dict, List]: can return a dictionary or list
     """
     # check the file exists or not
     if not os.path.exists(file_path):
