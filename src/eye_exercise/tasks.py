@@ -47,7 +47,7 @@ def get_headline(ip_address: str, category: str) -> Union[Dict, None]:
 
     Args:
         ip_address (str): IP address of server
-        category (str): category you like ex. news, tech, stock-market etc.
+        category (str): category you like i.e news, tech, stock-market etc.
 
     Returns:
         Union[Dict, None]: return Dict if the request was made successfully otherwise None
@@ -55,3 +55,22 @@ def get_headline(ip_address: str, category: str) -> Union[Dict, None]:
     url = "http://" + os.path.join(ip_address, "headline")
     data = {"category": category}
     return make_get_request(url, data)
+
+
+def load_env(env_path: str = None) -> None:
+    """ Load the env files
+
+    Args:
+        env_path (str): Path of the env file default is None
+    """
+    if env_path:
+        path = env_path
+    else:
+        path = ".env"
+
+    with open(path) as env:
+        for data in env.readlines():
+            data = data.replace("\n", "")
+            if data and not data.startswith("#"):
+                key, value = data.split("=", 1)
+                os.environ[key] = value

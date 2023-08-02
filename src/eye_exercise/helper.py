@@ -193,3 +193,8 @@ def convert_to_datetime(date_string: str, specifier: str) -> Union[datetime.date
 
     # return None if the string doesn't match any of the formats or specifier is not supported
     return None
+
+
+def is_true(str_bool: str) -> bool:
+    """Check if str_bool is True/False"""
+    return str_bool.lower() == "true"

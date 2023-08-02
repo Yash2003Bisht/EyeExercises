@@ -11,51 +11,47 @@ from threading import Thread
 # --------- internal ---------
 from eye_exercise.tasks import *
 from eye_exercise.reminders import *
+from eye_exercise.helper import *
+
+# ----------- load configurations -----------
+load_env()
 
 
 def start_eye_exercise():
     """ Main function of this project, responsible for playing sounds, reading configration file
-        exercise reminders etc."""
+        exercise reminders, etc."""
 
-    # ----------- load configurations -----------
-    config_data: Dict = read_file('../config.json', 0)
+    # ---------------------- pre-checks ----------------------
+    if os.environ.get("exercise_reminder_sound_path", "default") == "default":
+        os.environ["exercise_reminder_sound_path"] = '../music/reminder.mp3'
 
-    # ----------- configure values -----------
-    exercise_reminder_sound_path: str = config_data.get("exercise_reminder_sound_path", "default")
-    exercise_beep_sound_path: str = config_data.get("exercise_beep_sound_path", "default")
-    exercise_tic_sound_path: str = config_data.get("exercise_tic_sound_path", "default")
-    exercise_text_file_path: str = config_data.get("exercise_text_file_path", "text_files/exercise.txt")
-    tips_text_file_path: str = config_data.get("tips_text_file_path", "text_files/tips.txt")
-    exercise_time: int = config_data.get("exercise_time", 60) // 2
-    exercise_interval_time: int = config_data.get("exercise_interval_time", 600)
-    break_time: int = config_data.get("break_time", 900)
-    text_to_speech_enabled: bool = config_data.get("text_to_speech_enabled", True)
-    news_scraper_enabled: bool = config_data.get("news_scraper_enabled", True)
-    news_scraper_ip: str = config_data.get("news_scraper_ip", None)
-    news_category: str = config_data.get("news_category", "news")
-    tips_enabled: bool = config_data.get("tips_enabled", True)
-    tic_sound: bool = config_data.get("tic_sound", True)
-    exercise_reminder_volume: float = config_data.get("exercise_reminder_volume", 0.3)
-    gtts_volume: int = config_data.get("gtts_volume", 0)
-    sections: int = config_data.get("sections", 5)
+    if os.environ.get("exercise_beep_sound_path", "default") == "default":
+        os.environ["exercise_beep_sound_path"] = '../music/beep.wav'
+
+    if os.environ.get("exercise_tic_sound_path", "default") == "default":
+        os.environ["exercise_tic_sound_path"] = '../music/tic.mp3'
+
+    if os.environ.get("exercise_text_file_path", "default") == "default":
+        os.environ["exercise_text_file_path"] = "text_files/exercise.txt"
+
+    if os.environ.get("tips_text_file_path", "default") == "default":
+        os.environ["tips_text_file_path"] = "text_files/tips.txt"
+
+    # ---------------------- load frequent use variables ----------------------
+    exercise_time = int(os.environ["exercise_time"]) // 2
+    exercise_interval_time = int(os.environ["exercise_interval_time"])
+    break_time = int(os.environ["break_time"])
+    exercise_reminder_volume = float(os.environ["exercise_reminder_volume"])
+    text_to_speech_enabled = is_true(os.environ.get("text_to_speech_enabled", "true"))
 
     print(f'{ANSI_COLORS[1]} Configuration loaded... {ANSI_COLORS[2]}')
 
     current_section: int = 1
-    exercise_list: List = read_file(exercise_text_file_path, 0)
+    exercise_list: List = read_file(os.environ["exercise_text_file_path"], 0)
     tips: List = []
 
-    if exercise_reminder_sound_path == 'default':
-        exercise_reminder_sound_path = '../music/reminder.mp3'
-
-    if exercise_beep_sound_path == 'default':
-        exercise_beep_sound_path = '../music/beep.wav'
-
-    if exercise_tic_sound_path == 'default':
-        exercise_tic_sound_path = '../music/tic.mp3'
-
-    if tips_enabled:
-        tips = read_file(tips_text_file_path, 0)
+    if is_true(os.environ.get("tips_enabled", "true")):
+        tips = read_file(os.environ["tips_text_file_path"], 0)
 
     text_to_speech(f"\nEye Exercise Start at {datetime.datetime.now().strftime('%I:%M %p')}\n", text_to_speech_enabled)
 
@@ -64,7 +60,7 @@ def start_eye_exercise():
         toggle_exercise_start()
 
         if exercise_interval_time == 0:
-            exercise_interval_time = config_data['exercise_interval_time']
+            exercise_interval_time = int(os.environ["exercise_interval_time"])
 
         text_to_speech(f"Exercise {current_section} started", text_to_speech_enabled)
 
@@ -72,11 +68,12 @@ def start_eye_exercise():
             random_exercise = random.choice(exercise_list)
             text_to_speech(f"You can do: {random_exercise}", text_to_speech_enabled)
 
-        play_sound(exercise_reminder_sound_path, exercise_reminder_volume)
+        play_sound(os.environ["exercise_reminder_sound_path"], exercise_reminder_volume)
 
         # start a separate thread to play beep sound
         beep_sound_thread = Thread(target=play_beep_sound,
-                                   args=(exercise_reminder_sound_path, exercise_beep_sound_path))
+                                   args=(os.environ["exercise_reminder_sound_path"],
+                                         os.environ["exercise_beep_sound_path"]))
         beep_sound_thread.daemon = True
         beep_sound_thread.start()
 
@@ -88,8 +85,8 @@ def start_eye_exercise():
                 text_to_speech(f'Your {exercise_time * 2} seconds eye exercise started.', text_to_speech_enabled)
 
                 # play tic sound if enabled
-                if tic_sound:
-                    play_sound(exercise_tic_sound_path)
+                if is_true(os.environ.get("tic_sound", "true")):
+                    play_sound(os.environ["exercise_tic_sound_path"])
 
                 time.sleep(exercise_time)
 
@@ -103,12 +100,12 @@ def start_eye_exercise():
                     data = get_headline(news_scraper_ip, news_category)
                     if data:
                         google_text_to_speech(f"{data['title']}\n{data['description']}",
-                                              text_to_speech_enabled, gtts_volume)
+                                              text_to_speech_enabled, int(os.environ["gtts_volume"]))
                         print(data["url"])
                     else:
                         text_to_speech(f'{exercise_time} seconds passed', text_to_speech_enabled)
 
-                elif tips_enabled:
+                elif is_true(os.environ.get("tips_enabled", "true")):
                     random_tip = random.choice(tips)
                     text_to_speech(random_tip, text_to_speech_enabled)
 
@@ -126,7 +123,7 @@ def start_eye_exercise():
 
                 break
 
-        if current_section == sections:
+        if current_section == int(os.environ["sections"]):
             text_to_speech(f'{int(break_time / 60)} minute break time', text_to_speech_enabled)
 
             counter = 0
