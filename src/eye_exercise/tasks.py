@@ -1,76 +1,51 @@
 # --------- built-in ---------
-import os
-import tempfile
-from typing import Union, Dict
-
-# --------- external ---------
-import pygame
-from gtts import gTTS
-from pydub import AudioSegment
-from pygame import mixer
+import random
 
 # --------- internal ---------
-from eye_exercise.helper import make_get_request
+from eye_exercise.helper import *
+# all need to be imported from reminders because we need to run reminder function from here
+from eye_exercise.reminders import *
 
 
-def google_text_to_speech(text: str, enabled: bool, volume: int, lang: str = "hi"):
-    """ Google text to speech
+def handle_half_time_tasks():
+    """ Handle the tasks to be executed after exercise_time/2 seconds """
+    # check reminders
+    flag, details = check_reminders(os.path.join(os.getcwd(), "text_files/reminders.txt"),
+                                    int(os.environ["exercise_interval_time"]))
 
-    Args:
-        text (str): text that function speak
-        enabled (bool): feature enabled or not by the user
-        volume (int): volume of gtts
-        lang (str): language
-    """
-    if enabled:
-        tts = gTTS(text=text, lang=lang)
-        temp_file = tempfile.NamedTemporaryFile(suffix=".mp3")
-        tts.save(temp_file.name)
-        print(text)
+    # load frequent use variables
+    text_to_speech_enabled, exercise_time = (is_true(os.environ.get("text_to_speech_enabled", "true")),
+                                             int(os.environ["exercise_time"]) // 2)
 
-        # increased the volume of the generated speech
-        audio = AudioSegment.from_file(temp_file.name, format="mp3")
-        audio += volume  # ex. increase the volume by 6 dB
-        audio.export(temp_file.name, format="mp3")
+    # func_to_exec - stores the function pointer that we will run after half of exercise_time is left
+    # args - stores arguments of the function
 
-        # use a separate channel to play news audio file
-        mixer.Channel(1).play(pygame.mixer.Sound(temp_file.name))
-        while mixer.Channel(1).get_busy():
-            pygame.time.Clock().tick(10)
+    if flag:
+        func_to_exec = details["func"]
+        args = details["args"]
+
+    elif (is_true(os.environ.get("news_scraper_enabled", "false")) and os.environ.get("news_scraper_ip", "")
+          and os.environ.get("news_category", "")):
+        data = get_headline(os.environ["news_scraper_ip"], os.environ["news_category"])
+        if data:
+            func_to_exec = google_text_to_speech
+            args = (f"{data['title']}\n{data['description']}",
+                    text_to_speech_enabled, int(os.environ["gtts_volume"]), "hi", data["url"])
+        else:
+            func_to_exec = text_to_speech
+            args = (f'{exercise_time} seconds passed', text_to_speech_enabled)
+
+    elif is_true(os.environ.get("tips_enabled", "true")):
+        random_tip = random.choice(read_file(os.environ["tips_text_file_path"], 0))
+        func_to_exec = text_to_speech
+        args = (random_tip, text_to_speech_enabled)
 
     else:
-        print(text)
+        func_to_exec = text_to_speech
+        args = (f'{exercise_time} seconds passed', text_to_speech_enabled)
 
+    # sleep for half the time
+    time.sleep(exercise_time)
 
-def get_headline(ip_address: str, category: str) -> Union[Dict, None]:
-    """ Makes a get request to news scraper headline endpoint.
-
-    Args:
-        ip_address (str): IP address of server
-        category (str): category you like i.e news, tech, stock-market etc.
-
-    Returns:
-        Union[Dict, None]: return Dict if the request was made successfully otherwise None
-    """
-    url = "http://" + os.path.join(ip_address, "headline")
-    data = {"category": category}
-    return make_get_request(url, data)
-
-
-def load_env(env_path: str = None) -> None:
-    """ Load the env files
-
-    Args:
-        env_path (str): Path of the env file default is None
-    """
-    if env_path:
-        path = env_path
-    else:
-        path = ".env"
-
-    with open(path) as env:
-        for data in env.readlines():
-            data = data.replace("\n", "")
-            if data and not data.startswith("#"):
-                key, value = data.split("=", 1)
-                os.environ[key] = value
+    # execute function
+    func_to_exec(*args)

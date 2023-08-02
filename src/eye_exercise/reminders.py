@@ -1,7 +1,5 @@
 # --------- built-in ---------
-import os
-import datetime
-from typing import Union, Dict, List
+from typing import Union, Dict, List, Tuple
 
 # --------- external ---------
 from tabulate import tabulate
@@ -33,15 +31,17 @@ def stdout_market_stats(ip_address: str, exchange: str):
         print(tabulate(market_stats[stats], headers='firstrow', tablefmt='fancy_grid'), end="\n\n")
 
 
-def check_reminders(reminder_file_path: str, exercise_interval_time: int):
+def check_reminders(reminder_file_path: str, exercise_interval_time: int) -> Tuple[bool, Dict]:
     """ Checks the reminders file and run the function.
 
     Args:
         reminder_file_path (str): reminder file path
         exercise_interval_time (int): exercise interval time
+
+    Returns:
+        Tuple[bool, Dict]: True and a dict if the reminder condition is true otherwise False and empty dict
     """
     reminders: List[str] = read_file(reminder_file_path, 0)
-    flag = False
 
     for remind in reminders:
         specifier, reminder_datetime, func_to_exec, args = map(lambda text: text.lower(), remind.split(" - "))
@@ -56,10 +56,9 @@ def check_reminders(reminder_file_path: str, exercise_interval_time: int):
         # check the reminder and current datetime
         diff: float = (reminder_datetime - current_datetime).total_seconds()
         if 0 < diff < exercise_interval_time / 1.5 or exercise_interval_time * 0.5 - abs(diff) > 0:
-            globals()[func_to_exec](*args.split(" "))
-            flag = True
+            return True, {"func": func_to_exec, "args": args.split(" ")}
 
-    return flag
+    return False, {}
 
 
 if __name__ == "__main__":
