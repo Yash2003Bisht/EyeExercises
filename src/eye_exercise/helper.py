@@ -3,13 +3,17 @@ import os
 import time
 import json
 import datetime
-from typing import Any, Dict, Union, List
+import tempfile
+from typing import Dict, Union, List
 from json import JSONDecodeError
 
 # --------- external ---------
 import requests
 import pyttsx3
 import librosa
+import pygame
+from gtts import gTTS
+from pydub import AudioSegment
 from mutagen.mp3 import MP3
 from pygame import mixer
 from requests.exceptions import ConnectionError, Timeout
@@ -96,8 +100,8 @@ def make_get_request(url: str, data=None) -> Union[Dict, None]:
     """ Makes a get request to the URL
 
     Args:
-        url (str): URL to make a get reqeust
-        data (Dict): category you like ex. news, tech, stock-market etc. Default is None
+        url (str): URL to make get reqeust
+        data (Dict): category you like i.e. news, tech, stock-market etc. Default is None
 
     Returns:
         Union[Dict, None]: return Dict if the request was made successfully otherwise None
@@ -150,23 +154,6 @@ def read_file(file_path: str, priority: int) -> Union[Dict, List]:
     return data
 
 
-def catch_key_error(default_value: Any, data: Dict, *keys: Any):
-    """ Searches for a value in a dictionary. If any key is not found returns the default_value.
-
-    Args:
-        default_value (Any): default value to be returned if any of the keys are not found in the dictionary.
-        data (Dict): Dictionary to search for a value.
-        *keys (Any): keys to search for a value. Multiple keys can be provided as separate arguments.
-    """
-    try:
-        value: Any = None
-        for key in keys:
-            value = data[key]
-        return value
-    except (KeyError, TypeError):
-        return default_value
-
-
 def convert_to_datetime(date_string: str, specifier: str) -> Union[datetime.datetime, None]:
     """ Convert a given string representation of a date and time into a datetime object.
 
@@ -193,6 +180,73 @@ def convert_to_datetime(date_string: str, specifier: str) -> Union[datetime.date
 
     # return None if the string doesn't match any of the formats or specifier is not supported
     return None
+
+
+def google_text_to_speech(text: str, enabled: bool, volume: int, lang: str = "hi", no_speak_text: str = None):
+    """ Google text to speech
+
+    Args:
+        text (str): text that function speaks
+        enabled (bool): feature enabled or not by the user
+        volume (int): volume of gtts
+        lang (str): language
+        no_speak_text (str): Any additional information just want to print it
+    """
+    if enabled:
+        tts = gTTS(text=text, lang=lang)
+        temp_file = tempfile.NamedTemporaryFile(suffix=".mp3")
+        tts.save(temp_file.name)
+        print(text)
+
+        if no_speak_text:
+            print(no_speak_text)
+
+        # increased the volume of the generated speech
+        audio = AudioSegment.from_file(temp_file.name, format="mp3")
+        audio += volume  # ex. increase the volume by 6 dB
+        audio.export(temp_file.name, format="mp3")
+
+        # use a separate channel to play news audio file
+        mixer.Channel(1).play(pygame.mixer.Sound(temp_file.name))
+        while mixer.Channel(1).get_busy():
+            pygame.time.Clock().tick(10)
+
+    else:
+        print(text)
+
+
+def get_headline(ip_address: str, category: str) -> Union[Dict, None]:
+    """ Makes a get request to news scraper headline endpoint.
+
+    Args:
+        ip_address (str): IP address of server
+        category (str): category you like i.e news, tech, stock-market etc.
+
+    Returns:
+        Union[Dict, None]: return Dict if the request was made successfully otherwise None
+    """
+    url = "http://" + os.path.join(ip_address, "headline")
+    data = {"category": category}
+    return make_get_request(url, data)
+
+
+def load_env(env_path: str = None) -> None:
+    """ Load the env files
+
+    Args:
+        env_path (str): Path of the env file default is None
+    """
+    if env_path:
+        path = env_path
+    else:
+        path = ".env"
+
+    with open(path) as env:
+        for data in env.readlines():
+            data = data.replace("\n", "")
+            if data and not data.startswith("#"):
+                key, value = data.split("=", 1)
+                os.environ[key] = value
 
 
 def is_true(str_bool: str) -> bool:
