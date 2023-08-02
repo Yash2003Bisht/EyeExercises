@@ -17,7 +17,7 @@ def handle_half_time_tasks():
     text_to_speech_enabled, exercise_time = (is_true(os.environ.get("text_to_speech_enabled", "true")),
                                              int(os.environ["exercise_time"]) // 2)
 
-    # func_to_exec - stores the function pointer that we will run after half of exercise_time is left
+    # func_to_exec - stores the function address that we will run after half of exercise_time is left
     # args - stores arguments of the function
 
     if flag:
