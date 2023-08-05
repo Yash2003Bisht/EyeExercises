@@ -96,12 +96,13 @@ def play_beep_sound(reminder_sound_path: str, beep_sound_path: str):
         break
 
 
-def make_get_request(url: str, data=None) -> Union[Dict, None]:
+def make_get_request(url: str, data: Dict = None, timeout: int = 30) -> Union[Dict, None]:
     """ Makes a get request to the URL
 
     Args:
         url (str): URL to make get reqeust
         data (Dict): category you like i.e. news, tech, stock-market etc. Default is None
+        timeout (int): specifies the number of seconds the waits getting a response. Default is 30
 
     Returns:
         Union[Dict, None]: return Dict if the request was made successfully otherwise None
@@ -110,7 +111,7 @@ def make_get_request(url: str, data=None) -> Union[Dict, None]:
         data = {}
 
     try:
-        res = requests.get(url, data=json.dumps(data), timeout=30)
+        res = requests.get(url, data=json.dumps(data), timeout=timeout)
         if res.ok:
             response_data = res.json()
             return response_data["data"]
@@ -215,19 +216,21 @@ def google_text_to_speech(text: str, enabled: bool, volume: int, lang: str = "hi
         print(text)
 
 
-def get_headline(ip_address: str, category: str) -> Union[Dict, None]:
+def get_headline(ip_address: str, category: str, delay: int) -> Union[Dict, None]:
     """ Makes a get request to news scraper headline endpoint.
 
     Args:
         ip_address (str): IP address of server
         category (str): category you like i.e news, tech, stock-market etc.
+        delay (int): exercise time in seconds
 
     Returns:
         Union[Dict, None]: return Dict if the request was made successfully otherwise None
     """
     url = "http://" + os.path.join(ip_address, "headline")
     data = {"category": category}
-    return make_get_request(url, data)
+    timeout = delay // 2
+    return make_get_request(url, data, timeout)
 
 
 def load_env(env_path: str = None) -> None:

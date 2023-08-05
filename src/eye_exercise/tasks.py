@@ -25,7 +25,7 @@ def handle_half_time_tasks():
 
     elif (is_true(os.environ.get("news_scraper_enabled", "false")) and os.environ.get("news_scraper_ip", "")
           and os.environ.get("news_category", "")):
-        data = get_headline(os.environ["news_scraper_ip"], os.environ["news_category"])
+        data = get_headline(os.environ["news_scraper_ip"], os.environ["news_category"], exercise_time)
         if data:
             func_to_exec = [google_text_to_speech]
             args = [(f"{data['title']}\n{data['description']}",
