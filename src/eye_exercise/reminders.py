@@ -1,5 +1,5 @@
 # --------- built-in ---------
-from typing import Union, Dict, List, Tuple
+from typing import Union, Dict, List
 
 # --------- external ---------
 from tabulate import tabulate
@@ -31,7 +31,7 @@ def stdout_market_stats(ip_address: str, exchange: str):
         print(tabulate(market_stats[stats], headers='firstrow', tablefmt='fancy_grid'), end="\n\n")
 
 
-def check_reminders(reminder_file_path: str, exercise_interval_time: int) -> Tuple[bool, Dict]:
+def check_reminders(reminder_file_path: str, exercise_interval_time: int) -> List:
     """ Checks the reminders file and run the function.
 
     Args:
@@ -39,9 +39,10 @@ def check_reminders(reminder_file_path: str, exercise_interval_time: int) -> Tup
         exercise_interval_time (int): exercise interval time
 
     Returns:
-        Tuple[bool, Dict]: True and a dict if the reminder condition is true otherwise False and empty dict
+        List: Contain List of dict each dict will have {"func": reminder_function_to_run, "args": function_arguments}
     """
     reminders: List[str] = read_file(reminder_file_path, 0)
+    reminder_details = []
 
     for remind in reminders:
         specifier, reminder_datetime, func_to_exec, args = map(lambda text: text.lower(), remind.split(" - "))
@@ -56,9 +57,9 @@ def check_reminders(reminder_file_path: str, exercise_interval_time: int) -> Tup
         # check the reminder and current datetime
         diff: float = (reminder_datetime - current_datetime).total_seconds()
         if 0 < diff < exercise_interval_time / 1.5 or exercise_interval_time * 0.5 - abs(diff) > 0:
-            return True, {"func": func_to_exec, "args": args.split(" ")}
+            reminder_details.append({"func": globals()[func_to_exec], "args": args.split(" ")})
 
-    return False, {}
+    return reminder_details
 
 
 if __name__ == "__main__":
