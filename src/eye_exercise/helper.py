@@ -194,23 +194,30 @@ def google_text_to_speech(text: str, enabled: bool, volume: int, lang: str = "hi
         no_speak_text (str): Any additional information just want to print it
     """
     if enabled:
-        tts = gTTS(text=text, lang=lang)
-        temp_file = tempfile.NamedTemporaryFile(suffix=".mp3")
-        tts.save(temp_file.name)
-        print(text)
+        try:
+            tts = gTTS(text=text, lang=lang)
+            temp_file = tempfile.NamedTemporaryFile(suffix=".mp3")
+            tts.save(temp_file.name)
+            print(text)
 
-        if no_speak_text:
-            print(no_speak_text)
+            if no_speak_text:
+                print(no_speak_text)
 
-        # increased the volume of the generated speech
-        audio = AudioSegment.from_file(temp_file.name, format="mp3")
-        audio += volume  # ex. increase the volume by 6 dB
-        audio.export(temp_file.name, format="mp3")
+            # increased the volume of the generated speech
+            audio = AudioSegment.from_file(temp_file.name, format="mp3")
+            audio += volume  # ex. increase the volume by 6 dB
+            audio.export(temp_file.name, format="mp3")
 
-        # use a separate channel to play news audio file
-        mixer.Channel(1).play(pygame.mixer.Sound(temp_file.name))
-        while mixer.Channel(1).get_busy():
-            pygame.time.Clock().tick(10)
+            # use a separate channel to play news audio file
+            mixer.Channel(1).play(pygame.mixer.Sound(temp_file.name))
+            while mixer.Channel(1).get_busy():
+                pygame.time.Clock().tick(10)
+
+        # catch the exception
+        except Exception as err:
+            # log the error and pass the text to text_to_speech
+            print(err)
+            text_to_speech(text, enabled)
 
     else:
         print(text)
