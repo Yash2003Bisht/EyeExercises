@@ -2,6 +2,10 @@
 import random
 import time
 
+# --------- external ---------
+import librosa
+from mutagen.mp3 import MP3
+
 # --------- internal ---------
 from eye_exercise.helper import *
 # all need to be imported from reminders because we need to run reminder function from here
@@ -15,7 +19,7 @@ def handle_half_time_tasks():
 
     # check reminders
     details = check_reminders(os.path.join(os.getcwd(), "text_files/reminders.txt"),
-                                    int(os.environ["exercise_interval_time"]))
+                              int(os.environ["exercise_interval_time"]))
     # load frequent use variables
     text_to_speech_enabled, exercise_time = (is_true(os.environ.get("text_to_speech_enabled", "true")),
                                              int(os.environ["exercise_time"]) // 2)
@@ -57,3 +61,46 @@ def handle_half_time_tasks():
     # start executing functions
     for func, arguments in zip(func_to_exec, args):
         func(*arguments)
+
+
+def play_beep_sound(reminder_sound_path: str, beep_sound_path: str):
+    """ Play a beep sound when no input is received from the user
+
+    Args:
+        reminder_sound_path (str): path of file to play music
+        beep_sound_path (str): path of file to play beep
+    """
+    _, file_extension = os.path.splitext(reminder_sound_path)
+
+    # duration of audio
+    if file_extension == '.mp3':
+        duration = MP3(reminder_sound_path).info.length
+    elif file_extension == '.wav':
+        duration = librosa.get_duration(filename=reminder_sound_path)
+    else:
+        print(f'{ANSI_COLORS[0]} Can\'t play beep sound because file format is not supported.'
+              f' Only .mp3 and .wav are supported to calculate the total duration of reminder sound. {ANSI_COLORS[2]}')
+        return None
+
+    # don't play the beep sound while the exercise reminder sound is playing
+    # sleep the program for those seconds
+    time.sleep(duration)
+
+    # "exercise_start" variable is in helper.py
+    # import it from there
+    from eye_exercise.helper import exercise_start
+
+    while exercise_start:
+        # play beep sound after every 60 seconds
+        time.sleep(60)
+
+        # import the "exercise_start" from helper.py in each iteration
+        # since the state of it will change there
+        from eye_exercise.helper import exercise_start
+
+        if exercise_start:
+            play_sound(beep_sound_path)
+            continue
+
+        # break the loop if exercise is already ended
+        break

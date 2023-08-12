@@ -1,6 +1,5 @@
 # --------- built-in ---------
 import os
-import time
 import json
 import datetime
 import tempfile
@@ -10,11 +9,9 @@ from json import JSONDecodeError
 # --------- external ---------
 import requests
 import pyttsx3
-import librosa
 import pygame
 from gtts import gTTS
 from pydub import AudioSegment
-from mutagen.mp3 import MP3
 from pygame import mixer
 from requests.exceptions import ConnectionError, Timeout
 
@@ -62,38 +59,6 @@ def toggle_exercise_start():
     """ Toggle exercise_start variable """
     global exercise_start
     exercise_start = False if exercise_start else True
-
-
-def play_beep_sound(reminder_sound_path: str, beep_sound_path: str):
-    """ Play a beep sound when no input is received from the user
-    
-    Args:
-        reminder_sound_path (str): path of file to play music
-        beep_sound_path (str): path of file to play beep
-    """
-    _, file_extension = os.path.splitext(reminder_sound_path)
-
-    # duration of audio
-    if file_extension == '.mp3':
-        duration = MP3(reminder_sound_path).info.length
-    elif file_extension == '.wav':
-        duration = librosa.get_duration(filename=reminder_sound_path)
-    else:
-        print(f'{ANSI_COLORS[0]} Can\'t play beep sound because file format is not supported.'
-              f' Only .mp3 and .wav are supported to calculate the total duration of reminder sound. {ANSI_COLORS[2]}')
-        return None
-
-    # don't play the beep sound while the exercise reminder sound is playing
-    # sleep the program for those seconds
-    time.sleep(duration)
-
-    while True:
-        # play beep sound after every 60 seconds
-        time.sleep(60)
-        if exercise_start:
-            play_sound(beep_sound_path)
-            continue
-        break
 
 
 def make_get_request(url: str, data: Dict = None, timeout: int = 30) -> Union[Dict, None]:
