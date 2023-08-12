@@ -1,5 +1,6 @@
 # --------- built-in ---------
 import random
+import time
 
 # --------- internal ---------
 from eye_exercise.helper import *
@@ -9,6 +10,9 @@ from eye_exercise.reminders import *
 
 def handle_half_time_tasks():
     """ Handle the tasks to be executed after exercise_time/2 seconds """
+    # create a time counter to keep the track of execution time
+    start = time.perf_counter()
+
     # check reminders
     details = check_reminders(os.path.join(os.getcwd(), "text_files/reminders.txt"),
                                     int(os.environ["exercise_interval_time"]))
@@ -43,9 +47,13 @@ def handle_half_time_tasks():
         func_to_exec = [text_to_speech]
         args = [(f'{exercise_time} seconds passed', text_to_speech_enabled)]
 
-    # sleep for half the time
-    time.sleep(exercise_time)
+    # calculate the remaining time
+    execution_time = time.perf_counter() - start
+    delay = max(0, int(exercise_time - execution_time))
 
-    # execute functions
+    # sleep for "delay" seconds
+    time.sleep(delay)
+
+    # start executing functions
     for func, arguments in zip(func_to_exec, args):
         func(*arguments)
