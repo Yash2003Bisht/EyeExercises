@@ -120,6 +120,26 @@ def read_file(file_path: str, priority: int) -> Union[Dict, List]:
     return data
 
 
+def store_logs(file_name: str, path: str, log: str, extension: str = "log"):
+    """ Use this function to store the logs to a text file
+
+    Args:
+        file_name (str): Name of the file
+        path (str): Path to store the file
+        extension (str): File extension, default is .logs
+        log (str): Log to store
+    """
+    file_name = f"{file_name}.{extension}"
+    full_path = os.path.join(path, file_name)
+
+    # create the directory if not exists
+    if not os.path.exists(path):
+        os.mkdir(path)
+
+    with open(full_path, "a") as file:
+        file.write(log)
+
+
 def convert_to_datetime(date_string: str, specifier: str) -> Union[datetime.datetime, None]:
     """ Convert a given string representation of a date and time into a datetime object.
 
@@ -168,6 +188,10 @@ def google_text_to_speech(text: str, enabled: bool, volume: int, lang: str = "hi
             if no_speak_text:
                 print(no_speak_text)
 
+            # store the news logs to a file
+            news_log = f"{text}\n{no_speak_text}\n\n"
+            store_logs("news_logs", "logs", news_log)
+
             # increased the volume of the generated speech
             audio = AudioSegment.from_file(temp_file.name, format="mp3")
             audio += volume  # ex. increase the volume by 6 dB
@@ -180,12 +204,13 @@ def google_text_to_speech(text: str, enabled: bool, volume: int, lang: str = "hi
 
         # catch the exception
         except Exception as err:
-            # log the error and pass the text to text_to_speech
+            # logs the error and pass the text to text_to_speech
             print(err)
             text_to_speech(text, enabled)
 
     else:
         print(text)
+        print(no_speak_text)
 
 
 def get_headline(ip_address: str, category: str, delay: int) -> Union[Dict, None]:

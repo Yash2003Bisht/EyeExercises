@@ -44,7 +44,11 @@ def start_eye_exercise():
     exercise_list: List = read_file(os.environ["exercise_text_file_path"], 0)
     current_section: int = 1
 
-    print(f'{ANSI_COLORS[1]} Configuration loaded... {ANSI_COLORS[2]}')
+    print(f'{ANSI_COLORS[1]}Configuration loaded... {ANSI_COLORS[2]}')
+
+    # check news logs
+    if os.path.exists("logs/news_logs.log"):
+        print(f"{ANSI_COLORS[0]}News logs found!  {ANSI_COLORS[2]}")
 
     text_to_speech(f"\nEye Exercise Start at {datetime.datetime.now().strftime('%I:%M %p')}\n",
                    text_to_speech_enabled)
@@ -121,6 +125,12 @@ def start_eye_exercise():
 
 
 if __name__ == '__main__':
-    start_eye_exercise()
-    # print(globals()["get_market_stats"]("13.126.65.194", "nse"))
-    # print(check_reminders("../src/text_files/reminders.txt"))
+    try:
+        start_eye_exercise()
+    except KeyboardInterrupt:
+        print("quitting")
+
+        # delete new logs if exists
+        news_log_path = "logs/news_logs.log"
+        if os.path.exists(news_log_path):
+            os.system(f"rm -rf {news_log_path}")
