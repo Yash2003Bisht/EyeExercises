@@ -204,7 +204,7 @@ def google_text_to_speech(text: str, enabled: bool, volume: int, lang: str = "hi
 
         # catch the exception
         except Exception as err:
-            # logs the error and pass the text to text_to_speech
+            # log the error and pass the text to text_to_speech
             print(err)
             text_to_speech(text, enabled)
 
