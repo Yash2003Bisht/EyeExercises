@@ -92,7 +92,7 @@ def start_eye_exercise():
                 # sleep the program for "exercise_time" seconds
                 # so that above-created thread can be started
                 # because of python's GIL we can't run more than 1 thread simultaneously
-                # GIL will only allow multithreading for IO bounds tasks
+                # GIL will only allow multithreading for IO/CPU bounds tasks
                 time.sleep(exercise_time)
 
                 # stop the tic music once "exercise_time" is finished
