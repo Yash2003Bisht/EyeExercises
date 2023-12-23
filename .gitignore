@@ -9,3 +9,4 @@ config.json
 TODO
 .env
 logs
+.DS_Store
