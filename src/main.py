@@ -6,6 +6,7 @@
 # --------- built-in ---------
 import math
 from threading import Thread
+from multiprocessing import Process
 
 # --------- internal ---------
 from eye_exercise.tasks import *
@@ -87,7 +88,7 @@ def start_eye_exercise():
                     play_sound(os.environ["exercise_tic_sound_path"])
 
                 # create a separate thread to handle background tasks
-                Thread(target=handle_half_time_tasks, daemon=True).start()
+                Process(target=handle_half_time_tasks).start()
 
                 # sleep the program for "exercise_time" seconds
                 # so that above-created thread can be started
