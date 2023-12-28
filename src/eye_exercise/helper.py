@@ -198,7 +198,9 @@ def google_text_to_speech(text: str, enabled: bool, volume: int, lang: str = "hi
             audio.export(temp_file.name, format="mp3")
 
             # use a separate channel to play news audio file
-            mixer.Channel(1).play(pygame.mixer.Sound(temp_file.name))
+            # initialize the mixer
+            mixer.init()
+            mixer.Channel(1).play(mixer.Sound(temp_file.name))
             while mixer.Channel(1).get_busy():
                 pygame.time.Clock().tick(10)
 
