@@ -35,9 +35,10 @@ def handle_half_time_tasks():
           and os.environ.get("news_category", "")):
         data = get_headline(os.environ["news_scraper_ip"], os.environ["news_category"], exercise_time)
         if data:
+            gtss_text_to_speech_enabled = is_true(os.environ.get("gtss_text_to_speech_enabled", "false"))
             func_to_exec = [google_text_to_speech]
             args = [(f"{data['title']}\n{data['description']}",
-                     text_to_speech_enabled, int(os.environ["gtts_volume"]), "hi", data["url"])]
+                     gtss_text_to_speech_enabled, int(os.environ["gtts_volume"]), "hi", data["url"])]
         else:
             func_to_exec = [text_to_speech]
             args = [(f'{exercise_time} seconds passed', text_to_speech_enabled)]
