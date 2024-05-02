@@ -213,7 +213,7 @@ def google_text_to_speech(text: str, enabled: bool, volume: int, lang: str = "hi
     else:
         print(text)
         print(no_speak_text)
-        text_to_speech(f"{os.environ["exercise_time"] // 2} seconds passed",
+        text_to_speech(f"{os.environ['exercise_time'] // 2} seconds passed",
                        is_true(os.environ.get("text_to_speech_enabled", "true")))
 
 
