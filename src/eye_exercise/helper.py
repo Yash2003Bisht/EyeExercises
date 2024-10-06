@@ -25,6 +25,7 @@ ANSI_COLORS = [
 ]
 
 exercise_start: bool = False
+exercise_paused: bool = False
 
 
 def text_to_speech(text: str, enabled: bool):
@@ -59,6 +60,16 @@ def toggle_exercise_start():
     """ Toggle exercise_start variable """
     global exercise_start
     exercise_start = False if exercise_start else True
+
+
+def toggle_exercise_paused(required_value: bool = False):
+    """ Toggle exercise_paused variable """
+    global exercise_paused
+
+    if not required_value:
+        exercise_paused = False if exercise_paused else True
+    else:
+        return exercise_paused
 
 
 def make_get_request(url: str, data: Dict = None, timeout: int = 30) -> Union[Dict, None]:

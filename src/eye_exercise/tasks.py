@@ -1,6 +1,8 @@
 # --------- built-in ---------
+import sys
 import random
 import time
+import select  # not available on windows
 
 # --------- external ---------
 import librosa
@@ -87,6 +89,10 @@ def play_beep_sound(reminder_sound_path: str, beep_sound_path: str):
     # sleep the program for those seconds
     time.sleep(duration)
 
+    # don't run the beep sound if the exercise is in pause state
+    if exercise_paused:
+        return None
+
     # "exercise_start" variable is in helper.py
     # import it from there
     from eye_exercise.helper import exercise_start
@@ -105,3 +111,22 @@ def play_beep_sound(reminder_sound_path: str, beep_sound_path: str):
 
         # break the loop if exercise is already ended
         break
+
+
+def continue_execution(timeout: int):
+    """
+    Takes the input from user to continue the execution
+    """
+    # set a timeout for input
+    timeout = timeout
+    start_time = time.time()
+
+    while True:
+        # check if input is available
+        if select.select([sys.stdin], [], [], timeout - (time.time() - start_time))[0]:
+            user_input = input().lower()
+            if user_input == 'c':
+                toggle_exercise_paused()
+                break
+        else:
+            break

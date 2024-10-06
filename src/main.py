@@ -77,7 +77,9 @@ def start_eye_exercise():
         beep_sound_thread.start()
 
         while True:
-            if input('Enter S when ready: ').lower() == 's':
+            user_input = input('Enter S when ready: ').lower()
+
+            if user_input == 's':
                 toggle_exercise_start()
                 mixer.music.stop()  # stop the reminder music
 
@@ -87,7 +89,7 @@ def start_eye_exercise():
                 if is_true(os.environ.get("tic_sound", "true")):
                     play_sound(os.environ["exercise_tic_sound_path"])
 
-                # create a separate thread to handle background tasks
+                # create a separate process to handle background tasks
                 Process(target=handle_half_time_tasks).start()
 
                 # sleep the program for "exercise_time" seconds
@@ -103,6 +105,47 @@ def start_eye_exercise():
                                text_to_speech_enabled)
 
                 break
+
+            elif user_input.startswith('p'):
+                # pause the execution for 'n*60' seconds
+                try:
+                    n = int(user_input.split("-")[1])
+                except (ValueError, IndexError, TypeError):
+                    continue
+
+                print(f"Pausing execution for {n} minutes. Enter 'c' to continue.")
+
+                # toggle exercise paused
+                toggle_exercise_paused()
+
+                # stop the reminder music
+                mixer.music.stop()
+
+                # stop the execution for n*60 seconds
+                total_seconds = n*60
+
+                # create a thread to take the user to continue the execution
+                Thread(target=continue_execution, args=(total_seconds,)).start()
+
+                while total_seconds:
+                    if not toggle_exercise_paused(required_value=True):
+                        break
+                    time.sleep(1)
+                    total_seconds -= 1
+
+                # toggle exercise paused
+                if toggle_exercise_paused(required_value=True):
+                    toggle_exercise_paused()
+
+                # play the reminder sound
+                play_sound(os.environ["exercise_reminder_sound_path"], exercise_reminder_volume)
+
+                # start a separate thread to play beep sound
+                beep_sound_thread = Thread(target=play_beep_sound,
+                                           args=(os.environ["exercise_reminder_sound_path"],
+                                                 os.environ["exercise_beep_sound_path"]))
+                beep_sound_thread.daemon = True
+                beep_sound_thread.start()
 
         # --------------------------------- break time ---------------------------------
         if current_section == int(os.environ["sections"]):
