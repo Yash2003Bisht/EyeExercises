@@ -9,7 +9,7 @@ import librosa
 from mutagen.mp3 import MP3
 
 # --------- internal ---------
-from eye_exercise.helper import *
+from eye_exercise.helper import toggle_exercise_paused, toggle_exercise_start
 # all need to be imported from reminders because we need to run reminder function from here
 from eye_exercise.reminders import *
 
@@ -90,22 +90,14 @@ def play_beep_sound(reminder_sound_path: str, beep_sound_path: str):
     time.sleep(duration)
 
     # don't run the beep sound if the exercise is in pause state
-    if exercise_paused:
+    if toggle_exercise_paused(required_value=True):
         return None
 
-    # "exercise_start" variable is in helper.py
-    # import it from there
-    from eye_exercise.helper import exercise_start
-
-    while exercise_start:
+    while toggle_exercise_start(required_value=True):
         # play beep sound after every 60 seconds
         time.sleep(60)
 
-        # import the "exercise_start" from helper.py in each iteration
-        # since the state of it will change there
-        from eye_exercise.helper import exercise_start
-
-        if exercise_start:
+        if toggle_exercise_start(required_value=True):
             play_sound(beep_sound_path)
             continue
 
