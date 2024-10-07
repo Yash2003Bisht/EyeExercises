@@ -56,7 +56,7 @@ def play_sound(file: str, volume: float = 1.0):
     mixer_obj.play()
 
 
-def toggle_exercise_start(required_value: bool = False) -> None | bool:
+def toggle_exercise_start(required_value: bool = False) -> Union[None, bool]:
     """ Toggle exercise_start variable """
     global exercise_start
 
@@ -66,7 +66,7 @@ def toggle_exercise_start(required_value: bool = False) -> None | bool:
         return exercise_start
 
 
-def toggle_exercise_paused(required_value: bool = False) -> None | bool:
+def toggle_exercise_paused(required_value: bool = False) -> Union[None, bool]:
     """ Toggle exercise_paused variable """
     global exercise_paused
 
