@@ -3,7 +3,7 @@ import os
 import json
 import datetime
 import tempfile
-from typing import Dict, Union, List
+from typing import Dict, Union, List, TextIO
 from json import JSONDecodeError
 
 # --------- external ---------
@@ -24,9 +24,6 @@ ANSI_COLORS = [
     '\033[1;37m',  # white
 ]
 
-exercise_start: bool = False
-exercise_paused: bool = False
-
 
 def text_to_speech(text: str, enabled: bool):
     """ Text to speech
@@ -40,6 +37,32 @@ def text_to_speech(text: str, enabled: bool):
         engine: pyttsx3.engine.Engine = pyttsx3.init()
         engine.say(text)
         engine.runAndWait()
+
+
+def open_file(file_path: str, mode: str = 'r') -> TextIO:
+    """
+    Opens a file and return the TextIOW
+
+    Args:
+        path (str): path of file to open
+        mode (str): mode to open the file
+    """
+    if not os.path.exists(file_path):
+        # Create the file
+        file = open(file_path, 'w')
+
+        # Set the program default state
+        program_default_state = {
+            'exercise_start': False,
+            'exercise_paused': False
+        }
+        json.dump(program_default_state, file)
+
+
+        file.close()
+
+    file = open(file_path, mode)
+    return file
 
 
 def play_sound(file: str, volume: float = 1.0):
@@ -56,24 +79,38 @@ def play_sound(file: str, volume: float = 1.0):
     mixer_obj.play()
 
 
-def toggle_exercise_start(required_value: bool = False) -> Union[None, bool]:
+def toggle_exercise_start(to: Union[bool, None] = None,
+                          required_value: bool = False) -> Union[None, bool]:
     """ Toggle exercise_start variable """
-    global exercise_start
+    read_file = open_file("text_files/.program_state.json", "r")
+    program_state = json.load(read_file)
+    read_file.close()
 
     if not required_value:
-        exercise_start = False if exercise_start else True
+        program_state['exercise_start'] = to
+        write_file  = open_file("text_files/.program_state.json", "w")
+        json.dump(program_state, write_file)
     else:
-        return exercise_start
+        return program_state['exercise_start']
+
+    write_file.close()
 
 
-def toggle_exercise_paused(required_value: bool = False) -> Union[None, bool]:
+def toggle_exercise_paused(to: Union[bool, None] = None,
+                           required_value: bool = False) -> Union[None, bool]:
     """ Toggle exercise_paused variable """
-    global exercise_paused
+    read_file = open_file("text_files/.program_state.json", "r")
+    program_state = json.load(read_file)
+    read_file.close()
 
     if not required_value:
-        exercise_paused = False if exercise_paused else True
+        program_state['exercise_paused'] = to
+        write_file  = open_file("text_files/.program_state.json", "w")
+        json.dump(program_state, write_file)
     else:
-        return exercise_paused
+        return program_state['exercise_paused']
+
+    write_file.close()
 
 
 def make_get_request(url: str, data: Dict = None, timeout: int = 30) -> Union[Dict, None]:

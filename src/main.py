@@ -56,7 +56,7 @@ def start_eye_exercise():
 
     while True:
         time.sleep(exercise_interval_time)
-        toggle_exercise_start()
+        toggle_exercise_start(to=True)
 
         if exercise_interval_time == 0:
             exercise_interval_time = int(os.environ["exercise_interval_time"])
@@ -80,7 +80,7 @@ def start_eye_exercise():
             user_input = input('Enter S when ready: ').lower()
 
             if user_input == 's':
-                toggle_exercise_start()
+                toggle_exercise_start(to=False)
                 mixer.music.stop()  # stop the reminder music
 
                 text_to_speech(f'Your {exercise_time} seconds eye exercise started.', text_to_speech_enabled)
@@ -115,8 +115,9 @@ def start_eye_exercise():
 
                 print(f"Pausing execution for {n} minutes. Enter 'c' to continue.")
 
-                # toggle exercise paused
-                toggle_exercise_paused()
+                # toggle exercise paused and start
+                toggle_exercise_paused(to=True)
+                toggle_exercise_start(to=False)
 
                 # stop the reminder music
                 mixer.music.stop()
@@ -133,9 +134,10 @@ def start_eye_exercise():
                     time.sleep(1)
                     total_seconds -= 1
 
-                # toggle exercise paused
+                # toggle exercise paused and start
                 if toggle_exercise_paused(required_value=True):
-                    toggle_exercise_paused()
+                    toggle_exercise_paused(to=False)
+                    toggle_exercise_start(to=True)
 
                 # play the reminder sound
                 play_sound(os.environ["exercise_reminder_sound_path"], exercise_reminder_volume)
@@ -171,6 +173,7 @@ def start_eye_exercise():
 if __name__ == '__main__':
     try:
         start_eye_exercise()
+
     except KeyboardInterrupt:
         print("quitting")
 
@@ -178,3 +181,8 @@ if __name__ == '__main__':
         news_log_path = "logs/news_logs.log"
         if os.path.exists(news_log_path):
             os.system(f"rm -rf {news_log_path}")
+
+    finally:
+        # delete the program_state json file
+        if os.path.exists("text_files/.program_state.json"):
+            os.remove("text_files/.program_state.json")

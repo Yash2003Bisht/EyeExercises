@@ -118,7 +118,8 @@ def continue_execution(timeout: int):
         if select.select([sys.stdin], [], [], timeout - (time.time() - start_time))[0]:
             user_input = input().lower()
             if user_input == 'c':
-                toggle_exercise_paused()
+                toggle_exercise_paused(to=False)
+                toggle_exercise_start(to=True)
                 break
         else:
             break
